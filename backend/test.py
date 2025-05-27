@@ -1,0 +1,1 @@
+print("Hi i am Vishesh Dwivedi @Google , Amazon , Microsoft ,Apple , Meta  SWE or SDE ")
