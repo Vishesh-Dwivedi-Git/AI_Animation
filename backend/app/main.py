@@ -1,11 +1,11 @@
-from fastapi import FastAPI
-from pydantic import BaseModel
-from fastapi.staticfiles import StaticFiles
+from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
-
+from pydantic import BaseModel
 from app.llm_gen import generate_manim_code
-from app.utils import save_code_to_file
-from app.render import render_video
+from app.utils import inject_manim_config
+from app.render import render_and_store
+from app.auth import get_current_user, create_user, authenticate_user
+from app.models import UserCreate, UserLogin
 from dotenv import load_dotenv
 import traceback
 
@@ -20,27 +20,31 @@ class PromptRequest(BaseModel):
 def read_root():
     return {"message": "API is live!"}
 
+@app.post("/signup")
+def signup(user: UserCreate):
+    return create_user(user)
+
+@app.post("/login")
+def login(user: UserLogin):
+    return authenticate_user(user)
+
 @app.post("/generate")
-def generate_scene(req: PromptRequest):
+def generate_scene(req: PromptRequest, user=Depends(get_current_user)):
     try:
         print("\n🟡 Received prompt:", req.prompt)
 
-        code = generate_manim_code(req.prompt)
-        print("✅ Generated Manim code:\n", code[:500])  # Print first 500 chars
+        raw_code = generate_manim_code(req.prompt)
+        print("✅ Raw generated code:\n", raw_code[:500])
 
-        path = save_code_to_file(code)
-        print(f"📄 Code saved to: {path}")
+        final_code = inject_manim_config(raw_code)
+        print("✅ Cleaned and injected code:\n", final_code[:500])
 
-        print("🎞️ Starting render...")
-        video_path = render_video(path)
-        print(f"✅ Video rendered at: {video_path}")
+        video_url = render_and_store(user["email"], req.prompt, final_code)
+        print(f"✅ Uploaded video: {video_url}")
 
-        return {"video_url": f"/{video_path}"}
+        return {"video_url": video_url}
 
     except Exception as e:
-        print("❌ Error occurred during generation pipeline")
+        print("❌ Error during generation pipeline")
         traceback.print_exc()
         return JSONResponse(status_code=500, content={"error": str(e)})
-
-# Serve static video files
-app.mount("/videos", StaticFiles(directory="videos"), name="videos")

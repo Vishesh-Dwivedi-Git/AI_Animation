@@ -1,3 +1,17 @@
-venv/
+# Python artifacts
 __pycache__/
+*.py[cod]
+*.egg
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv/
+.env/
+.venv/
+
+# Manim video output
 *.mp4
+media/
+videos/
