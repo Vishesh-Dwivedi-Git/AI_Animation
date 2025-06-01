@@ -1,4 +1,4 @@
-from jose import JWTError, jwt
+from jose import JWTError , jwt
 from datetime import datetime, timedelta
 
 # Secret key to sign the JWT (keep this secure!)
