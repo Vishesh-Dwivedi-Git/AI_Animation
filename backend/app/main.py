@@ -39,7 +39,7 @@ def generate_scene(req: PromptRequest, user=Depends(get_current_user)):
         final_code = inject_manim_config(raw_code)
         print("✅ Cleaned and injected code:\n", final_code[:500])
 
-        video_url = render_and_store(user["email"], req.prompt, final_code)
+        video_url = render_and_store(final_code, user["email"],prompt=req.prompt)
         print(f"✅ Uploaded video: {video_url}")
 
         return {"video_url": video_url}
