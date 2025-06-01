@@ -24,5 +24,6 @@ def authenticate_user(user: UserLogin):
 def get_current_user(token: str = Depends(oauth2_scheme)):
     user = find_user_by_email(token)
     if not user:
+        print("❌ Invalid or expired token:", token)
         raise HTTPException(status_code=401, detail="Invalid or expired token")
     return user
