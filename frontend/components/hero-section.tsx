@@ -1,6 +1,10 @@
-import { Button } from "@/components/ui/button"
+import { Button } from '@/components/ui/button'
 
-export function HeroSection() {
+interface HeroSectionProps {
+  onLoginClick: () => void
+}
+
+export function HeroSection({ onLoginClick }: HeroSectionProps) {
   return (
     <section className="relative min-h-screen flex items-center justify-center">
       <div className="absolute inset-0 bg-black">
@@ -25,7 +29,11 @@ export function HeroSection() {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-          <Button size="lg" className="bg-green-500 text-black hover:bg-green-400 px-8 py-3 font-mono">
+          <Button
+            size="lg"
+            className="bg-green-500 text-black hover:bg-green-400 px-8 py-3 font-mono"
+            onClick={onLoginClick}
+          >
             start_creating
           </Button>
           <Button

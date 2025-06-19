@@ -1,8 +1,12 @@
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Card } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 
-export function ChatPreview() {
+interface ChatPreviewProps {
+  onLoginClick: () => void
+}
+
+export function ChatPreview({ onLoginClick }: ChatPreviewProps) {
   return (
     <section className="py-24 bg-black">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -45,7 +49,6 @@ export function ChatPreview() {
                   <div className="bg-gray-800 p-4 rounded max-w-md">
                     <p className="text-white mb-4 text-sm">generating animation...</p>
 
-                    {/* Animation Preview */}
                     <div className="bg-gray-700 h-32 rounded mb-4 flex items-center justify-center">
                       <div className="text-gray-400 text-xs text-center">
                         <div className="w-8 h-8 bg-gray-600 rounded mx-auto mb-2" />
@@ -76,7 +79,12 @@ export function ChatPreview() {
                     placeholder="describe_your_animation()"
                     className="bg-black border-gray-700 text-white placeholder-gray-500 font-mono text-sm"
                   />
-                  <Button className="bg-green-500 text-black font-mono text-sm">send</Button>
+                  <Button
+                    className="bg-green-500 text-black font-mono text-sm"
+                    onClick={onLoginClick}
+                  >
+                    send
+                  </Button>
                 </div>
               </div>
             </div>
