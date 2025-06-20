@@ -4,10 +4,11 @@ from pydantic import BaseModel
 from app.llm_gen import generate_manim_code
 from app.utils import inject_manim_config
 from app.render import render_and_store
-from app.auth import get_current_user, create_user, authenticate_user
-from app.models import UserCreate, UserLogin
 from dotenv import load_dotenv
 import traceback
+from app.verifyprivy import verify_privy_token
+
+from backend.app import db
 
 load_dotenv()
 
@@ -20,26 +21,37 @@ class PromptRequest(BaseModel):
 def read_root():
     return {"message": "API is live!"}
 
-@app.post("/signup")
-def signup(user: UserCreate):
-    return create_user(user)
+@app.post("/api/auth/privy-login")
+async def privy_login(payload=Depends(verify_privy_token)):
+    privy_id = payload["sub"]
+    email = payload.get("email")
 
-@app.post("/login")
-def login(user: UserLogin):
-    return authenticate_user(user)
+    user = db.users.find_one({"privy_id": privy_id})
+    if not user:
+        db.users.insert_one({"privy_id": privy_id, "email": email})
+
+    return {"message": "Logged in", "email": email}
+
 
 @app.post("/generate")
-def generate_scene(req: PromptRequest, user=Depends(get_current_user)):
+def generate_scene(req: PromptRequest, payload=Depends(verify_privy_token)):
     try:
-        print("\n🟡 Received prompt:", req.prompt)
+        privy_id = payload["sub"]         # from token
+        user_email = payload.get("email") # optional if present in token
 
+        print(f"\n🔐 Authenticated user: {user_email or privy_id}")
+        print("🟡 Received prompt:", req.prompt)
+
+        # Generate animation code
         raw_code = generate_manim_code(req.prompt)
         print("✅ Raw generated code:\n", raw_code[:500])
 
+        # Inject manim config
         final_code = inject_manim_config(raw_code)
-        print("✅ Cleaned and injected code:\n", final_code[:500])
+        print("✅ Final code:\n", final_code[:500])
 
-        video_url = render_and_store(final_code, user["email"],prompt=req.prompt)
+        # Render and upload video
+        video_url = render_and_store(final_code,  privy_id, prompt=req.prompt)
         print(f"✅ Uploaded video: {video_url}")
 
         return {"video_url": video_url}

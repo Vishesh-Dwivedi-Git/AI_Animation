@@ -9,7 +9,7 @@ import glob
 
 from .db import insert_render_entry  # Make sure this import exists
 
-def render_and_store(user_code: str, email: str, prompt: str) -> str:
+def render_and_store(user_code: str, privy_id: str, prompt: str) -> str:
     import tempfile, subprocess, uuid, os, glob
 
     # Step 1: Save Manim code to temp file
@@ -42,7 +42,7 @@ def render_and_store(user_code: str, email: str, prompt: str) -> str:
     video_url = upload_video(real_output_path, output_filename)
 
     # Step 5: Save render entry in MongoDB
-    insert_render_entry(email=email, prompt=prompt, code=user_code, video_url=video_url)
+    insert_render_entry(privy_id=privy_id, prompt=prompt, code=user_code, video_url=video_url)
 
     # Step 6: Clean up
     os.remove(code_path)
