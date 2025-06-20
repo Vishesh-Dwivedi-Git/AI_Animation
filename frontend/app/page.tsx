@@ -26,7 +26,7 @@ export default function Home() {
       <HowItWorks />
       <Features />
       <ChatPreview onLoginClick={() => setIsLoginOpen(true)} />
-      <Pricing />
+      <Pricing onLoginClick={()=>setIsLoginOpen(true)} />
       <Testimonials />
       <FAQ />
       <Footer />

@@ -7,12 +7,20 @@ from app.render import render_and_store
 from dotenv import load_dotenv
 import traceback
 from app.verifyprivy import verify_privy_token
-
-from backend.app import db
+from app.db import find_user_by_privy_id, create_user_with_email_and_privy_id, db
+from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # 👈 You can restrict this later (e.g., ["http://localhost:3000"])
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class PromptRequest(BaseModel):
     prompt: str
@@ -26,9 +34,9 @@ async def privy_login(payload=Depends(verify_privy_token)):
     privy_id = payload["sub"]
     email = payload.get("email")
 
-    user = db.users.find_one({"privy_id": privy_id})
+    user = find_user_by_privy_id(privy_id)
     if not user:
-        db.users.insert_one({"privy_id": privy_id, "email": email})
+        create_user_with_email_and_privy_id(privy_id, email)
 
     return {"message": "Logged in", "email": email}
 

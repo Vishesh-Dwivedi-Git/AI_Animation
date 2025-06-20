@@ -10,7 +10,6 @@ import glob
 from .db import insert_render_entry  # Make sure this import exists
 
 def render_and_store(user_code: str, privy_id: str, prompt: str) -> str:
-    import tempfile, subprocess, uuid, os, glob
 
     # Step 1: Save Manim code to temp file
     with tempfile.NamedTemporaryFile(mode="w", suffix=".py", delete=False) as tmp_code_file:

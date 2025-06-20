@@ -1,7 +1,13 @@
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-
-export function Pricing() {
+import { toast } from "react-hot-toast"
+// If you haven't installed react-hot-toast, run:
+// pnpm add react-hot-toast
+// pnpm add -D @types/react-hot-toast
+interface ChatPreviewProps {
+  onLoginClick: () => void
+}
+export function Pricing({ onLoginClick }: ChatPreviewProps) {
   const plans = [
     {
       name: "free",
@@ -88,7 +94,15 @@ export function Pricing() {
                   plan.popular
                     ? "bg-black text-green-400 hover:bg-gray-900"
                     : "bg-green-500 text-black hover:bg-green-400"
-                }`}
+                }`
+                }
+                 onClick={() => {
+    if (plan.cta === "start_free") {
+      onLoginClick();
+    } else {
+      toast("Coming soon");
+    }
+  }}
               >
                 {plan.cta}
               </Button>

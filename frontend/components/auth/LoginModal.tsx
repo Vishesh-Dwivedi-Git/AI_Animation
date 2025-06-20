@@ -2,6 +2,7 @@
 
 import { usePrivy } from "@privy-io/react-auth"
 import axios from "axios"
+import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 
 interface LoginModalProps {
@@ -10,13 +11,15 @@ interface LoginModalProps {
 }
 
 export default function LoginModal({ onClose, login }: LoginModalProps) {
-  const { user, authenticated, getAccessToken } = usePrivy()
+  const { user, authenticated, getAccessToken } = usePrivy();
+  const router = useRouter();
 
   useEffect(() => {
     const authenticateWithBackend = async () => {
       if (authenticated && user) {
         try {
           const token = await getAccessToken()
+          console.log("🔑 Privy access token:", token);
           
           // 👇 Hit your backend endpoint with Privy access token
           await axios.post(
@@ -30,6 +33,7 @@ export default function LoginModal({ onClose, login }: LoginModalProps) {
           )
 
           console.log("✅ Authenticated with backend")
+          router.push("/chat") // redirect to chat page
           onClose() // close modal after success
         } catch (err) {
           console.error("❌ Backend auth failed", err)

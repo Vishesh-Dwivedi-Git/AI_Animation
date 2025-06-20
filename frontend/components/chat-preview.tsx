@@ -8,7 +8,7 @@ interface ChatPreviewProps {
 
 export function ChatPreview({ onLoginClick }: ChatPreviewProps) {
   return (
-    <section className="py-24 bg-black">
+    <section id='preview' className="py-24 bg-black">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4 text-white">interface()</h2>
@@ -60,16 +60,16 @@ export function ChatPreview({ onLoginClick }: ChatPreviewProps) {
                       <Button
                         size="sm"
                         variant="outline"
-                        className="border-gray-600 text-gray-300 hover:bg-gray-700 text-xs font-mono"
+                        className=" text-black border-gray-600  hover:bg-gray-700 text-xs font-mono"
                       >
                         regenerate
                       </Button>
-                      <Button size="sm" className="bg-green-500 text-black text-xs font-mono">
+                      <Button size="sm" className="text-xs font-mono bg-green-500 text-black hover:bg-green-400">
                         download
                       </Button>
                     </div>
                   </div>
-                </div>
+                </div> 
               </div>
 
               {/* Input Area */}
@@ -80,7 +80,7 @@ export function ChatPreview({ onLoginClick }: ChatPreviewProps) {
                     className="bg-black border-gray-700 text-white placeholder-gray-500 font-mono text-sm"
                   />
                   <Button
-                    className="bg-green-500 text-black font-mono text-sm"
+                    className="text-s font-mono bg-green-500 text-black hover:bg-green-400"
                     onClick={onLoginClick}
                   >
                     send

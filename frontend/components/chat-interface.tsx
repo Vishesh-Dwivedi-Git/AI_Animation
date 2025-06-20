@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea"
 import axios from "axios"
 import { usePrivy } from "@privy-io/react-auth"
 import LoginModal from "./auth/LoginModal"
-import { useRouter } from "next/router"
+import { useRouter } from "next/navigation"
 
 interface Message {
   id: string
@@ -18,19 +18,21 @@ interface Message {
 }
 
 export function ChatInterface() {
-  const router = useRouter();
-  const { user, authenticated, getAccessToken ,login } = usePrivy()
+  const { user, authenticated, getAccessToken, login,logout } = usePrivy()
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
-  const [isGenerating, setIsGenerating] = useState(false)
+  const [isGenerating, setIsGenerating] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
-    if (authenticated && user?.email) {
+    if (authenticated && user) {
+      const name =
+        user.google?.name || user.github?.name || user.twitter?.name || user.email || "Unknown"
       setMessages([
         {
           id: crypto.randomUUID(),
           type: "ai",
-          content: `Hello ${user.email}, describe the animation you want to create.`,
+          content: `Hello ${name}, describe the animation you want to create.`,
         },
       ])
     }
@@ -60,7 +62,7 @@ export function ChatInterface() {
       const accessToken = await getAccessToken()
 
       const res = await axios.post(
-        "http://localhost:8000/api/generate-animation",
+        "http://localhost:8000/generate",
         { prompt: input },
         {
           headers: {
@@ -101,16 +103,37 @@ export function ChatInterface() {
   }
 
   if (!authenticated) {
-    return (
-      <LoginModal onClose={() => router.push("/") } login={()=>login()}/>
-    )
+    return <LoginModal onClose={() => window.location.href = "/"} login={() => login()} />
   }
+
+  const displayName =
+    user?.google?.name ||
+    user?.github?.name ||
+    user?.twitter?.name ||
+    (typeof user?.email === "string"
+      ? user?.email
+      : typeof user?.email === "object" && user?.email !== null && "address" in user.email
+      ? (user.email as { address: string }).address
+      : undefined) ||
+    "Unknown"
 
   return (
     <div className="h-screen flex flex-col bg-gray-950">
-      <div className="p-4 border-b border-gray-800 bg-gray-950 text-white text-sm font-mono">
-        User: {user?.email ? String(user.email) : "Unknown"} // {messages.length} messages
-      </div>
+      <div className="p-4 border-b border-gray-800 bg-gray-950 text-white text-sm font-mono flex justify-between items-center">
+  <div>
+    User: {displayName} // {messages.length} messages
+  </div>
+  <Button
+    onClick={async() => {
+      await logout()
+      router.push("/")
+    } }
+    className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded-md text-xs font-mono"
+  >
+    Logout
+  </Button>
+</div>
+
 
       <ScrollArea className="flex-1 p-4">
         <div className="space-y-6 max-w-4xl mx-auto">
@@ -126,10 +149,7 @@ export function ChatInterface() {
                 {msg.content}
                 {msg.videoUrl && (
                   <div className="mt-4">
-                    <video
-                      controls
-                      className="w-full max-w-md border border-gray-700 rounded-lg"
-                    >
+                    <video controls className="w-full max-w-md border border-gray-700 rounded-lg">
                       <source src={msg.videoUrl} type="video/mp4" />
                     </video>
                     <div className="flex gap-2 mt-2">
@@ -153,7 +173,7 @@ export function ChatInterface() {
         <div className="max-w-4xl mx-auto">
           <Textarea
             rows={3}
-            placeholder="A cat dancing under neon lights..."
+            placeholder="generate a moving circle ...."
             className="w-full bg-black border-gray-700 text-white placeholder-gray-500 font-mono text-sm resize-none"
             value={input}
             onChange={(e) => setInput(e.target.value)}
