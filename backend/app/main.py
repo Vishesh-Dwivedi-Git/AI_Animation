@@ -9,6 +9,9 @@ import traceback
 from app.verifyprivy import verify_privy_token
 from app.db import find_user_by_privy_id, create_user_with_email_and_privy_id, db
 from fastapi.middleware.cors import CORSMiddleware
+from app.asset_fetcher import fetch_assets
+from app.parser import parse_prompt
+from app.llm_gen import generate_scene_code
 
 load_dotenv()
 
@@ -44,27 +47,35 @@ async def privy_login(payload=Depends(verify_privy_token)):
 @app.post("/generate")
 def generate_scene(req: PromptRequest, payload=Depends(verify_privy_token)):
     try:
-        privy_id = payload["sub"]         # from token
-        user_email = payload.get("email") # optional if present in token
+        # 🔐 User authentication
+        privy_id = payload["sub"]
+        user_email = payload.get("email")
 
         print(f"\n🔐 Authenticated user: {user_email or privy_id}")
         print("🟡 Received prompt:", req.prompt)
 
-        # Generate animation code
-        raw_code = generate_manim_code(req.prompt)
-        print("✅ Raw generated code:\n", raw_code[:500])
+        # 🔎 Step 1: Parse prompt into structured scene data
+        scene_data = parse_prompt(req.prompt, theme=req.theme)
+        print("✅ Parsed scene data:\n", scene_data)
 
-        # Inject manim config
+        # 🎨 Step 2: Generate/fetch required assets
+        fetch_assets(scene_data)
+
+        # 🧠 Step 3: Generate Manim code using theme + scene
+        raw_code = generate_scene_code(scene_data)
+        print("✅ Raw Manim code:\n", raw_code[:500])
+
+        # ⚙️ Step 4: Optionally inject Manim config (like resolution, bg color)
         final_code = inject_manim_config(raw_code)
-        print("✅ Final code:\n", final_code[:500])
+        print("✅ Final Manim code ready:\n", final_code[:500])
 
-        # Render and upload video
-        video_url = render_and_store(final_code,  privy_id, prompt=req.prompt)
-        print(f"✅ Uploaded video: {video_url}")
+        # 🎞️ Step 5: Render and store video
+        video_url = render_and_store(final_code, user_id=privy_id, prompt=req.prompt)
+        print(f"✅ Uploaded video URL: {video_url}")
 
         return {"video_url": video_url}
 
     except Exception as e:
-        print("❌ Error during generation pipeline")
+        print("❌ Error during full generation pipeline")
         traceback.print_exc()
         return JSONResponse(status_code=500, content={"error": str(e)})

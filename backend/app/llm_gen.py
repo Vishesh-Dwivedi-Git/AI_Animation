@@ -1,7 +1,9 @@
 import os
+import json
 import traceback
 from mistralai import Mistral
 from dotenv import load_dotenv
+from themes.config import themes  # Theme config you defined earlier
 
 load_dotenv()
 
@@ -10,32 +12,48 @@ api_key = os.getenv("MISTRAL_API_KEY")
 model = "mistral-large-latest"
 client = Mistral(api_key=api_key)
 
-def generate_manim_code(prompt: str) -> str:
+def generate_scene_code(scene_data: dict) -> str:
+    """
+    Given parsed scene data (objects, actions, background, theme),
+    and the theme config, generate stylized Manim code via Mistral LLM.
+    """
+
     try:
-        print("\n🟡 Sending prompt to Mistral LLM...")
-        print(f"📝 Prompt: {prompt}")
+        print("\n⚙️ Generating Manim scene from scene_data + theme...")
+
+        theme = scene_data.get("theme", "default")
+        theme_config = themes.get(theme, {})
+
+        scene_json = json.dumps(scene_data, indent=2)
+        theme_json = json.dumps(theme_config, indent=2)
 
         system_prompt = (
-            "You are an expert Python developer using the Manim animation library. "
-            "Based on user prompts, generate valid and clean Manim code that uses the Scene class. "
-            "Only return Python code. Do not add comments or explanations."
+            "You are an expert in creating animations using the Manim library in Python. "
+            "Given a scene description and a theme configuration, generate a Python class that inherits from Scene. "
+            "Use background images, object animations, and apply the theme: transitions, run_time, easing, and fonts. "
+            "Use ImageMobject for objects and backgrounds if applicable. "
+            "Do NOT return anything other than Python code."
         )
 
-        full_prompt = f"{system_prompt}\n\nUser Prompt: {prompt}\nGenerate only Manim Python code for this."
+        prompt = (
+            f"Scene Data:\n{scene_json}\n\n"
+            f"Theme Config:\n{theme_json}\n\n"
+            "Generate a stylized Manim Scene class implementing this data."
+        )
 
-        chat_response = client.chat.complete(
+        response = client.chat.complete(
             model=model,
             messages=[
-                {"role": "user", "content": full_prompt},
+                {"role": "user", "content": f"{system_prompt}\n\n{prompt}"}
             ]
         )
 
-        code = chat_response.choices[0].message.content
-        print("✅ Mistral LLM response received. Sample:\n", code[:500])  # Partial preview
+        code = response.choices[0].message.content.strip()
 
+        print("✅ Scene code generated (preview):\n", code[:300])
         return code
 
     except Exception as e:
-        print("❌ Error during LLM generation with Mistral")
+        print("❌ Error generating scene code from Mistral")
         traceback.print_exc()
-        return "# Error: Failed to generate code"
+        return "# Error: Failed to generate scene code"
