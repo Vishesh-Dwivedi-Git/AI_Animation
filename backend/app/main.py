@@ -1,7 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from app.llm_gen import generate_manim_code
 from app.utils import inject_manim_config
 from app.render import render_and_store
 from dotenv import load_dotenv

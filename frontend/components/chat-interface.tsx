@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import axios from "axios"
 import { usePrivy } from "@privy-io/react-auth"
 import LoginModal from "./auth/LoginModal"
@@ -17,12 +18,44 @@ interface Message {
   isLoading?: boolean
 }
 
+const themes = {
+  anime: {
+    run_time: 1,
+    easing: "linear",
+    transitions: ["FadeIn", "GrowFromCenter"],
+    background_fx: "zoom_in",
+    font: "Noto Sans JP",
+  },
+  cartoon: {
+    run_time: 2,
+    easing: "ease_in_out",
+    transitions: ["BounceIn", "SpinIn"],
+    background_fx: "pan_left",
+    font: "Comic Sans MS",
+  },
+  minimalist: {
+    run_time: 3,
+    easing: "smooth",
+    transitions: ["FadeIn"],
+    background_fx: null,
+    font: "Arial",
+  },
+  "sci-fi": {
+    run_time: 1.2,
+    easing: "ease_out",
+    transitions: ["FadeIn", "ZoomIn"],
+    background_fx: "matrix_scroll",
+    font: "Orbitron",
+  },
+}
+
 export function ChatInterface() {
-  const { user, authenticated, getAccessToken, login,logout } = usePrivy()
+  const { user, authenticated, getAccessToken, login, logout } = usePrivy()
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
-  const [isGenerating, setIsGenerating] = useState(false);
-  const router = useRouter();
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [selectedTheme, setSelectedTheme] = useState<keyof typeof themes>("anime")
+  const router = useRouter()
 
   useEffect(() => {
     if (authenticated && user) {
@@ -32,7 +65,7 @@ export function ChatInterface() {
         {
           id: crypto.randomUUID(),
           type: "ai",
-          content: `Hello ${name}, describe the animation you want to create.`,
+          content: `Hello ${name}, select a theme and describe the animation you want to create.`,
         },
       ])
     }
@@ -45,7 +78,7 @@ export function ChatInterface() {
     const newUserMessage: Message = {
       id: crypto.randomUUID(),
       type: "user",
-      content: input,
+      content: `${input} (Theme: ${selectedTheme})`,
     }
 
     const newAIPlaceholder: Message = {
@@ -63,7 +96,7 @@ export function ChatInterface() {
 
       const res = await axios.post(
         "http://localhost:8000/generate",
-        { prompt: input },
+        { prompt: input, theme: themes[selectedTheme] },
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -78,7 +111,7 @@ export function ChatInterface() {
           msg.id === newAIPlaceholder.id
             ? {
                 ...msg,
-                content: "Here is your generated animation:",
+                content: `Here is your generated animation (Theme: ${selectedTheme}):`,
                 isLoading: false,
                 videoUrl,
               }
@@ -120,20 +153,31 @@ export function ChatInterface() {
   return (
     <div className="h-screen flex flex-col bg-gray-950">
       <div className="p-4 border-b border-gray-800 bg-gray-950 text-white text-sm font-mono flex justify-between items-center">
-  <div>
-    User: {displayName} // {messages.length} messages
-  </div>
-  <Button
-    onClick={async() => {
-      await logout()
-      router.push("/")
-    } }
-    className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded-md text-xs font-mono"
-  >
-    Logout
-  </Button>
-</div>
-
+        <div className="flex items-center gap-4">
+          <div>User: {displayName} // {messages.length} messages</div>
+          <Select value={selectedTheme} onValueChange={value => setSelectedTheme(value as keyof typeof themes)}>
+            <SelectTrigger className="w-[180px] bg-gray-900 border-gray-700 text-white font-mono text-sm">
+              <SelectValue placeholder="Select theme" />
+            </SelectTrigger>
+            <SelectContent className="bg-gray-900 border-gray-700 text-white font-mono text-sm">
+              {Object.keys(themes).map((theme) => (
+                <SelectItem key={theme} value={theme} className="capitalize">
+                  {theme}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <Button
+          onClick={async () => {
+            await logout()
+            router.push("/")
+          }}
+          className="bg-red-600 hover:bg-red-500 text-white px-3 py-1 rounded-md text-xs font-mono"
+        >
+          Logout
+        </Button>
+      </div>
 
       <ScrollArea className="flex-1 p-4">
         <div className="space-y-6 max-w-4xl mx-auto">

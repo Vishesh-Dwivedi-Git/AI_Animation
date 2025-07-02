@@ -3,7 +3,7 @@ import json
 import traceback
 from mistralai import Mistral
 from dotenv import load_dotenv
-from themes.config import themes  # Theme config you defined earlier
+from app.themes.config import themes # Theme config you defined earlier
 
 load_dotenv()
 
