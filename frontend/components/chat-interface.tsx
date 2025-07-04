@@ -96,7 +96,7 @@ export function ChatInterface() {
 
       const res = await axios.post(
         "http://localhost:8000/generate",
-        { prompt: input, theme: themes[selectedTheme] },
+        { prompt: input, theme: selectedTheme},
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -197,6 +197,7 @@ export function ChatInterface() {
                       <source src={msg.videoUrl} type="video/mp4" />
                     </video>
                     <div className="flex gap-2 mt-2">
+
                       <a
                         href={msg.videoUrl}
                         download

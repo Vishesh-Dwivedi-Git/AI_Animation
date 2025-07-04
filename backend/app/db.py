@@ -1,6 +1,9 @@
+from dotenv import load_dotenv
+load_dotenv()
 from pymongo import MongoClient
 import os
 from datetime import datetime
+
 
 client = MongoClient(os.getenv("MONGO_URL"))
 db = client["manim_db"]

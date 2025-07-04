@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from app.utils import inject_manim_config
@@ -6,7 +6,7 @@ from app.render import render_and_store
 from dotenv import load_dotenv
 import traceback
 from app.verifyprivy import verify_privy_token
-from app.db import find_user_by_privy_id, create_user_with_email_and_privy_id, db
+from app.db import find_user_by_privy_id, create_user_with_email_and_privy_id
 from fastapi.middleware.cors import CORSMiddleware
 from app.asset_fetcher import fetch_assets
 from app.parser import parse_prompt
@@ -26,6 +26,8 @@ app.add_middleware(
 
 class PromptRequest(BaseModel):
     prompt: str
+    # You probably need to add:
+    theme: str
 
 @app.get("/")
 def read_root():
@@ -69,7 +71,7 @@ def generate_scene(req: PromptRequest, payload=Depends(verify_privy_token)):
         print("✅ Final Manim code ready:\n", final_code[:500])
 
         # 🎞️ Step 5: Render and store video
-        video_url = render_and_store(final_code, user_id=privy_id, prompt=req.prompt)
+        video_url = render_and_store(final_code, privy_id, req.prompt)
         print(f"✅ Uploaded video URL: {video_url}")
 
         return {"video_url": video_url}

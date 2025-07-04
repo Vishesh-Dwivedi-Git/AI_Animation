@@ -1,5 +1,6 @@
 import os
 import json
+import re
 import traceback
 from mistralai import Mistral
 from dotenv import load_dotenv
@@ -50,6 +51,11 @@ Default Theme: "{theme}"
 
         content = response.choices[0].message.content.strip()
         print("🧠 Mistral response (raw):", content)
+
+        # Strip Markdown code block if present
+        if content.startswith("```"):
+            content = re.sub(r"^```(?:json)?\s*", "", content)   # Remove starting ```
+            content = re.sub(r"\s*```$", "", content)            # Remove ending ```
 
         # Parse JSON safely
         scene_data = json.loads(content)
