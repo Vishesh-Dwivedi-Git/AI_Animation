@@ -16,9 +16,11 @@ def generate_manim_code(prompt: str) -> str:
         print(f"📝 Prompt: {prompt}")
 
         system_prompt = (
-            "You are an expert Python developer using the Manim animation library. "
+           "You are an expert Python developer using the Manim animation library. "
             "Based on user prompts, generate valid and clean Manim code that uses the Scene class. "
-            "Only return Python code. Do not add comments or explanations."
+            "Only return Python code. Do not add comments or explanations. "
+             "Only generate animations involving basic 2D shapes such as circles, squares, triangles, lines, and polygons. "
+             "Do not use any external objects, images, or prebuilt scenes. Focus strictly on 2D shape-based animations."
         )
 
         full_prompt = f"{system_prompt}\n\nUser Prompt: {prompt}\nGenerate only Manim Python code for this."

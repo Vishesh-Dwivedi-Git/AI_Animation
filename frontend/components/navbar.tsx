@@ -24,7 +24,7 @@ export function Navbar({ onLoginClick }: NavbarProps) {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex items-center space-x-2">
-            <span className="text-lg font-bold text-white">[animagic.ai]</span>
+            <span className="text-lg font-bold text-white">[aiMagic.2D]</span>
           </div>
 
           {/* Desktop Nav */}

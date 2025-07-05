@@ -18,8 +18,8 @@ export function HeroSection({ onLoginClick }: HeroSectionProps) {
           </div>
         </div>
 
-        <h1 className="text-4xl md:text-6xl font-bold mb-8 leading-tight">
-          <span className="text-white">generate_2d_animations()</span>
+        <h1 className="text-4xl md:text-6xl font-bold mb-8 leading-tight ">
+          <span className="text-white">get_2d_Shapes_animations()</span>
           <br />
           <span className="text-gray-400">from_text_prompts</span>
         </h1>
